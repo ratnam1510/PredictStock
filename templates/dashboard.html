@@ -107,14 +107,13 @@
         <div class="glass-effect p-4 rounded-lg mt-8 animate-fade-in" style="animation-delay: 0.3s;">
             <canvas id="price-chart"></canvas>
         </div>
-
         <div id="watchlist" class="mt-8 glass-effect p-4 rounded-lg animate-fade-in" style="animation-delay: 0.4s;">
             <h2 class="text-2xl font-bold mb-4">Watchlist</h2>
             <ul id="watchlist-items" class="space-y-2"></ul>
         </div>
     </div>
     <script>
-       const stockForm = document.getElementById('stock-form');
+        const stockForm = document.getElementById('stock-form');
         const results = document.getElementById('results');
         const errorMessage = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
@@ -129,14 +128,8 @@
 
         logoutBtn.addEventListener('click', async () => {
             try {
-                const response = await fetch('/logout', {
-                    method: 'GET'
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                const response = await fetch('/logout', { method: 'GET' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 window.location.href = '/login';
             } catch (error) {
                 showError('Logout failed: ' + error.message);
@@ -194,31 +187,15 @@
                     body: formData
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
 
                 updateStockInfo(data);
                 results.classList.remove('hidden');
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
-                if (updateInterval) {
-                    clearInterval(updateInterval);
-                }
-
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
+                if (updateInterval) clearInterval(updateInterval);
                 updateInterval = setInterval(updateCurrentPrice, 10000);
 
             } catch (error) {
@@ -237,15 +214,8 @@
             document.getElementById('market-status').textContent = data.market_status;
             document.getElementById('market-status').className = data.market_status === 'open' ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
 
-<<<<<<< HEAD
             favoriteBtn.textContent = favorites.includes(data.symbol) ? 'Remove from Favorites' : 'Add to Favorites';
 
-=======
-
-            favoriteBtn.textContent = favorites.includes(data.symbol) ? 'Remove from Favorites' : 'Add to Favorites';
-
-
->>>>>>> origin/main
             const recommendationElement = document.getElementById('recommendation');
             if (data.recommendation === 'BUY') {
                 recommendationElement.className = 'font-bold text-green-600';
@@ -267,9 +237,7 @@
         }
 
         function updateChart(currentPrice, predictedPrice) {
-            if (chart) {
-                chart.destroy();
-            }
+            if (chart) chart.destroy();
 
             chart = new Chart(ctx, {
                 type: 'bar',
@@ -304,19 +272,10 @@
             const symbol = document.getElementById('result-symbol').textContent;
             try {
                 const response = await fetch(`/get_current_price?symbol=${symbol}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
                 document.getElementById('result-current-price').textContent = data.current_price.toFixed(2);
-
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
                 chart.data.datasets[0].data[0] = data.current_price;
                 chart.update();
             } catch (error) {
@@ -332,10 +291,6 @@
             loading.classList.add('hidden');
         }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
         updateWatchlist();
     </script>
 </body>
