@@ -207,10 +207,18 @@
                 updateStockInfo(data);
                 results.classList.remove('hidden');
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                 if (updateInterval) {
                     clearInterval(updateInterval);
                 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                 updateInterval = setInterval(updateCurrentPrice, 10000);
 
             } catch (error) {
@@ -229,8 +237,15 @@
             document.getElementById('market-status').textContent = data.market_status;
             document.getElementById('market-status').className = data.market_status === 'open' ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
 
+<<<<<<< HEAD
             favoriteBtn.textContent = favorites.includes(data.symbol) ? 'Remove from Favorites' : 'Add to Favorites';
 
+=======
+
+            favoriteBtn.textContent = favorites.includes(data.symbol) ? 'Remove from Favorites' : 'Add to Favorites';
+
+
+>>>>>>> origin/main
             const recommendationElement = document.getElementById('recommendation');
             if (data.recommendation === 'BUY') {
                 recommendationElement.className = 'font-bold text-green-600';
@@ -298,6 +313,10 @@
                 }
                 document.getElementById('result-current-price').textContent = data.current_price.toFixed(2);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                 chart.data.datasets[0].data[0] = data.current_price;
                 chart.update();
             } catch (error) {
@@ -313,6 +332,10 @@
             loading.classList.add('hidden');
         }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
         updateWatchlist();
     </script>
 </body>

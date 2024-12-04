@@ -3,9 +3,20 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+<<<<<<< HEAD
 #import numpy as np
 from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+=======
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from keras.src.models import Sequential
+from keras.src.layers import LSTM, Dense, Dropout
+from keras.src.optimizers import Adam
+from keras.src.callbacks import EarlyStopping
+>>>>>>> origin/main
 import yfinance as yf
 import re
 from datetime import datetime, timedelta
@@ -23,14 +34,23 @@ import time
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+<<<<<<< HEAD
 app.config['SECRET_KEY'] = 'your_secret_key'
+=======
+app.config['SECRET_KEY'] = 'your_secret_key'  # Use a strong, randomly generated key in production
+>>>>>>> origin/main
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
+<<<<<<< HEAD
 app.config['MAIL_USERNAME'] = 'predictthestocks@gmail.com'
 app.config['MAIL_PASSWORD'] = 'iijv szgz pvuf aewb'
+=======
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
+app.config['MAIL_PASSWORD'] = 'your_app_password'  # Use app-specific password
+>>>>>>> origin/main
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
@@ -43,9 +63,17 @@ class User(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     two_factor_secret = db.Column(db.String(32))
 
+<<<<<<< HEAD
 with app.app_context():
     db.create_all()
 
+=======
+
+with app.app_context():
+    db.create_all()
+
+
+>>>>>>> origin/main
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
 
@@ -54,6 +82,7 @@ def send_verification_email(email, otp):
     msg.body = f'Your verification code is: {otp}'
     mail.send(msg)
 
+<<<<<<< HEAD
 def create_model(data):
     arima_model = auto_arima(data, seasonal=False, stepwise=True, suppress_warnings=True)
     arima_order = arima_model.order
@@ -67,6 +96,26 @@ def create_model(data):
 def prepare_data(data):
     # No need to reshape data for ARIMA
     return data
+=======
+def create_model(input_shape):
+    model = Sequential([
+        LSTM(64, return_sequences=True, input_shape=input_shape),
+        Dropout(0.2),
+        LSTM(64, return_sequences=False),
+        Dropout(0.2),
+        Dense(32, activation='relu'),
+        Dense(1)
+    ])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+    return model
+
+def prepare_data(data, time_steps):
+    X, y = [], []
+    for i in range(len(data) - time_steps):
+        X.append(data[i:(i + time_steps)])
+        y.append(data[i + time_steps])
+    return np.array(X), np.array(y)
+>>>>>>> origin/main
 
 def validate_stock_symbol(symbol):
     pattern = r'^[A-Z]{1,5}(\.[A-Z]{1,2})?$'
@@ -78,6 +127,10 @@ def home():
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -103,7 +156,12 @@ def signup():
 
     return render_template('signup.html')
 
+<<<<<<< HEAD
 @app.route('/email', methods=['GET', 'POST'])
+=======
+
+@app.route('/verify-email', methods=['GET', 'POST'])
+>>>>>>> origin/main
 def verify_email():
     if 'email' not in session:
         return redirect(url_for('signup'))
@@ -121,7 +179,12 @@ def verify_email():
 
     return render_template('email.html')
 
+<<<<<<< HEAD
 @app.route('/twofa', methods=['GET', 'POST'])
+=======
+
+@app.route('/setup-2fa', methods=['GET', 'POST'])
+>>>>>>> origin/main
 def setup_2fa():
     if 'email' not in session:
         return redirect(url_for('login'))
@@ -152,6 +215,10 @@ def setup_2fa():
 
     return render_template('twofa.html', qr_code=qr_code, secret=user.two_factor_secret)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -175,17 +242,29 @@ def login():
 
     return render_template('login.html')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('dashboard.html')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 stock_cache = {}
 executor = ThreadPoolExecutor(max_workers=5)
 
@@ -196,7 +275,11 @@ def fetch_stock_data(symbol):
         is_market_open = 9 <= ny_time.hour < 16 and ny_time.weekday() < 5
 
         if is_market_open:
+<<<<<<< HEAD
             current_price = stock.history(period="1d")['Close'][-1]
+=======
+            current_price = stock.info['regularMarketPrice']
+>>>>>>> origin/main
         else:
             last_trading_day = ny_time.date()
             if ny_time.weekday() >= 5:
@@ -274,12 +357,30 @@ def get_price_and_predict():
 
         current_price = data['Close'].iloc[-1]
 
+<<<<<<< HEAD
 
         prepared_data = prepare_data(data['Close'].values)
 
         model = create_model(prepared_data)
 
         predicted_price = model.forecast(steps=5)[0]
+=======
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        scaled_data = scaler.fit_transform(data['Close'].values.reshape(-1, 1))
+
+        time_steps = 60
+        X, y = prepare_data(scaled_data, time_steps)
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        model = create_model((time_steps, 1))
+        early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+        model.fit(X_train, y_train, epochs=100, batch_size=32, validation_data=(X_test, y_test), callbacks=[early_stopping], verbose=0)
+
+        last_sequence = scaled_data[-time_steps:].reshape(1, -1, 1)
+        predicted_price = model.predict(last_sequence)
+        predicted_price = scaler.inverse_transform(predicted_price)[0][0]
+>>>>>>> origin/main
 
         profit_percentage = ((predicted_price - current_price) / current_price) * 100
 
