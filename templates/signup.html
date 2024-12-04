@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .input-transition {
+            transition: all 0.3s ease;
+        }
+
+        .input-transition:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .button-transition {
+            transition: all 0.3s ease;
+        }
+
+        .button-transition:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="glass-effect p-8 rounded-lg w-96 animate-fade-in">
+        <h2 class="text-2xl font-bold mb-4 animate-slide-in text-white">Sign Up</h2>
+        <form method="POST">
+            <div class="mb-4 animate-slide-in" style="animation-delay: 0.1s;">
+                <label for="username" class="block text-white">Username</label>
+                <input type="text" id="username" name="username" required class="w-full px-3 py-2 border rounded input-transition bg-white bg-opacity-20 text-white placeholder-white::placeholder">
+            </div>
+            <div class="mb-4 animate-slide-in" style="animation-delay: 0.2s;">
+                <label for="email" class="block text-white">Email Address</label>
+                <input type="email" id="email" name="email" required class="w-full px-3 py-2 border rounded input-transition bg-white bg-opacity-20 text-white placeholder-white::placeholder">
+            </div>
+            <div class="mb-4 animate-slide-in" style="animation-delay: 0.3s;">
+                <label for="password" class="block text-white">Password</label>
+                <input type="password" id="password" name="password" required class="w-full px-3 py-2 border rounded input-transition bg-white bg-opacity-20 text-white placeholder-white::placeholder">
+            </div>
+            <button type="submit" class="w-full bg-white bg-opacity-20 text-white py-2 rounded hover:bg-opacity-30 button-transition animate-slide-in" style="animation-delay: 0.4s;">Sign Up</button>
+        </form>
+        <p class="mt-4 text-center animate-fade-in text-white" style="animation-delay: 0.5s;">
+            Already have an account? <a href="{{ url_for('login') }}" class="text-white hover:underline">Login</a>
+        </p>
+    </div>
+</body>
+</html>

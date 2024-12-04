@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Prediction Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .input-transition {
+            transition: all 0.3s ease;
+        }
+
+        .input-transition:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .button-transition {
+            transition: all 0.3s ease;
+        }
+
+        .button-transition:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-4 animate-fade-in">
+            <h1 class="text-3xl font-bold">Stock Prediction Dashboard</h1>
+            <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 button-transition">Logout</button>
+        </div>
+        <form id="stock-form" class="mb-8 glass-effect p-4 rounded-lg animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex space-x-4">
+                <div class="flex-1">
+                    <label for="symbol" class="block text-white">Stock Symbol</label>
+                    <input type="text" id="symbol" name="symbol" required class="w-full px-3 py-2 border rounded input-transition bg-white bg-opacity-20 text-white placeholder-white::placeholder">
+                </div>
+                <div class="flex-none">
+                    <label class="block text-white">&nbsp;</label>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 button-transition">Get Price & Predict</button>
+                </div>
+            </div>
+        </form>
+        <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 hidden animate-fade-in" role="alert">
+            <span class="block sm:inline" id="error-text"></span>
+        </div>
+        <div id="loading" class="text-center mb-4 hidden animate-fade-in">
+            <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading...
+        </div>
+        <div id="results" class="glass-effect p-4 rounded-lg shadow-md hidden animate-fade-in" style="animation-delay: 0.2s;">
+            <h2 class="text-xl font-bold mb-2">Results</h2>
+            <p>Symbol: <span id="result-symbol" class="font-bold"></span></p>
+            <p>Current Price: $<span id="result-current-price"></span></p>
+            <p>Predicted Price: $<span id="predicted-price"></span></p>
+            <p>Profit Percentage: <span id="profit-percentage"></span>%</p>
+            <p>Recommendation: <span id="recommendation" class="font-bold"></span></p>
+            <p>Market Status: <span id="market-status"></span></p>
+            <p id="last-trading-time" class="hidden">Last Trading Time: <span></span></p>
+            <button id="favorite-btn" class="mt-4 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 button-transition">Add to Favorites</button>
+        </div>
+        <div class="glass-effect p-4 rounded-lg mt-8 animate-fade-in" style="animation-delay: 0.3s;">
+            <canvas id="price-chart"></canvas>
+        </div>
+
+        <div id="watchlist" class="mt-8 glass-effect p-4 rounded-lg animate-fade-in" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl font-bold mb-4">Watchlist</h2>
+            <ul id="watchlist-items" class="space-y-2"></ul>
+        </div>
+    </div>
+    <script>
+       const stockForm = document.getElementById('stock-form');
+        const results = document.getElementById('results');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const loading = document.getElementById('loading');
+        const logoutBtn = document.getElementById('logout-btn');
+        const favoriteBtn = document.getElementById('favorite-btn');
+        const watchlistItems = document.getElementById('watchlist-items');
+        const ctx = document.getElementById('price-chart').getContext('2d');
+        let chart;
+        let updateInterval;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'GET'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                window.location.href = '/login';
+            } catch (error) {
+                showError('Logout failed: ' + error.message);
+            }
+        });
+
+        favoriteBtn.addEventListener('click', () => {
+            const symbol = document.getElementById('result-symbol').textContent;
+            if (!favorites.includes(symbol)) {
+                favorites.push(symbol);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                updateWatchlist();
+                favoriteBtn.textContent = 'Remove from Favorites';
+            } else {
+                favorites = favorites.filter(fav => fav !== symbol);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                updateWatchlist();
+                favoriteBtn.textContent = 'Add to Favorites';
+            }
+        });
+
+        function updateWatchlist() {
+            watchlistItems.innerHTML = '';
+            favorites.forEach(symbol => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center bg-white p-2 rounded shadow';
+                li.innerHTML = `
+                    <span>${symbol}</span>
+                    <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" onclick="getStockInfo('${symbol}')">View</button>
+                `;
+                watchlistItems.appendChild(li);
+            });
+        }
+
+        async function getStockInfo(symbol) {
+            const formData = new FormData();
+            formData.append('symbol', symbol);
+            await fetchStockData(formData);
+        }
+
+        stockForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(stockForm);
+            await fetchStockData(formData);
+        });
+
+        async function fetchStockData(formData) {
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            try {
+                const response = await fetch('/get_price_and_predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                updateStockInfo(data);
+                results.classList.remove('hidden');
+
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                }
+
+                updateInterval = setInterval(updateCurrentPrice, 10000);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function updateStockInfo(data) {
+            document.getElementById('result-symbol').textContent = data.symbol;
+            document.getElementById('result-current-price').textContent = data.current_price.toFixed(2);
+            document.getElementById('predicted-price').textContent = data.predicted_price.toFixed(2);
+            document.getElementById('profit-percentage').textContent = data.profit_percentage.toFixed(2);
+            document.getElementById('recommendation').textContent = data.recommendation;
+            document.getElementById('market-status').textContent = data.market_status;
+            document.getElementById('market-status').className = data.market_status === 'open' ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+
+            favoriteBtn.textContent = favorites.includes(data.symbol) ? 'Remove from Favorites' : 'Add to Favorites';
+
+            const recommendationElement = document.getElementById('recommendation');
+            if (data.recommendation === 'BUY') {
+                recommendationElement.className = 'font-bold text-green-600';
+            } else if (data.recommendation === 'SELL') {
+                recommendationElement.className = 'font-bold text-red-600';
+            } else {
+                recommendationElement.className = 'font-bold text-yellow-600';
+            }
+
+            const lastTradingTimeElement = document.getElementById('last-trading-time');
+            if (data.market_status === 'closed') {
+                lastTradingTimeElement.classList.remove('hidden');
+                lastTradingTimeElement.querySelector('span').textContent = data.last_trading_time;
+            } else {
+                lastTradingTimeElement.classList.add('hidden');
+            }
+
+            updateChart(data.current_price, data.predicted_price);
+        }
+
+        function updateChart(currentPrice, predictedPrice) {
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Current', 'Predicted'],
+                    datasets: [{
+                        label: 'Price',
+                        data: [currentPrice, predictedPrice],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateCurrentPrice() {
+            const symbol = document.getElementById('result-symbol').textContent;
+            try {
+                const response = await fetch(`/get_current_price?symbol=${symbol}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                document.getElementById('result-current-price').textContent = data.current_price.toFixed(2);
+
+                chart.data.datasets[0].data[0] = data.current_price;
+                chart.update();
+            } catch (error) {
+                console.error('Error updating price:', error);
+            }
+        }
+
+        function showError(message) {
+            console.error('Error:', message);
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            results.classList.add('hidden');
+            loading.classList.add('hidden');
+        }
+
+        updateWatchlist();
+    </script>
+</body>
+</html>
